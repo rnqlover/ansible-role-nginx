@@ -30,6 +30,15 @@
 # Vhost configuration.
 - import_tasks: vhosts.yml
 
+# - debug:
+#     msg: "{{ nginx_vhosts[0].server_name }}"
+
+# - name: Make upstram directory
+#   file:
+#     path: "{{ nginx_conf_path }}/{{ nginx_vhosts.server_name }}.d"
+#     state: directory
+
+
 # Nginx setup.
 - name: Copy nginx configuration in place.
   template:
@@ -41,5 +50,17 @@
   notify:
     - reload nginx
 
+- name: generate dhparam
+  openssl_dhparam:
+    path: /etc/nginx/ssl/pki/dhparam.pem
+
+- name: create log dirs
+  file:
+    path: /var/log/nginx/{{ nginx_vhosts[0].server_name }}
+    state: directory
+
 - name: Ensure nginx is started and enabled to start at boot.
-  service: name=nginx state=started enabled=yes
+  service:
+    name: nginx
+    state: started
+    enabled: yes
